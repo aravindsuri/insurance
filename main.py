@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from pydantic import BaseModel
 
 # Load environment variables (Supabase credentials)
 load_dotenv()
@@ -17,6 +18,12 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 # Define the storage bucket name
 BUCKET_NAME = 'InsuranceBot'  # Replace with your actual bucket name
 
+# Define the request model to receive the question
+class QuestionRequest(BaseModel):
+    prompt: str
+
+
+    
 # Endpoint to retrieve a list of files from a Supabase storage bucket
 @app.get("/getfiles")
 async def get_files():
@@ -31,6 +38,7 @@ async def get_files():
             raise HTTPException(status_code=500, detail="Failed to retrieve files.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 # Endpoint to upload a file to a Supabase storage bucket
 @app.post("/upload")
@@ -68,3 +76,28 @@ async def upload_file(file: UploadFile = File(...)):
         return {"status": "File uploaded successfully", "file_name": file_name}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+def generate_answer(question: str):
+    if "coverage" in question.lower():
+        return {"answer": "Your coverage includes general liability, property insurance, and workers' compensation."}
+    elif "premium" in question.lower():
+        return {"answer": "Your monthly premium is $500."}
+    elif "deductible" in question.lower():
+        return {"answer": "Your deductible is $1,000."}
+    elif "chart" in question.lower():
+        return {
+            "answer": "Here is how your insurance premium increased over time.",
+            "chart_data": {
+                "labels": ["2020", "2021", "2022", "2023", "2024"],
+                "values": [63, 63, 69, 69, 73]
+            }
+        }
+    else:
+        return {"answer": "Sorry, I don't have an answer to that question."}
+
+# Define the FastAPI endpoint
+@app.post("/getanswer")
+async def get_answer(question: QuestionRequest):
+    # Generate an answer based on the question
+    answer = generate_answer(question.prompt)
+    return answer  # Return the result directly
