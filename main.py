@@ -79,7 +79,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 def generate_answer(question: str):
     if "coverage" in question.lower():
-        return {"answer": "Your coverage includes general liability, property insurance, and workers' compensation."}
+        return {"answer": "Your coverage includes general liability, property insurance, and workers' compensatio."}
     elif "premium" in question.lower():
         return {"answer": "Your monthly premium is $500."}
     elif "deductible" in question.lower():
